@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Converter + World Clock</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Time Converter + World Clock</div>
+    <div class="status" id="api-status" aria-live="polite">Проверка API…</div>
+  </header>
+
+  <main class="layout">
+    <section class="card" aria-label="Конвертация времени">
+      <header class="section-header">
+        <div>
+          <p class="kicker">Инструменты</p>
+          <h1>Конвертация времени</h1>
+        </div>
+        <div class="actions-inline">
+          <button type="button" class="ghost" data-action="clear">Очистить</button>
+          <button type="button" class="ghost" data-action="now">Сейчас</button>
+          <button type="button" class="ghost" data-action="swap">Поменять</button>
+        </div>
+      </header>
+
+      <form id="convert-form" class="form-grid">
+        <label class="field">
+          <span>Дата и время</span>
+          <input aria-label="Дата и время" type="datetime-local" name="datetime" data-input="datetime" required />
+        </label>
+        <label class="field">
+          <span>Из таймзоны</span>
+          <select aria-label="Из таймзоны" name="from" data-select="from" required></select>
+        </label>
+        <label class="field">
+          <span>В таймзону</span>
+          <select aria-label="В таймзону" name="to" data-select="to" required></select>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="primary" data-action="convert">Конвертировать</button>
+        </div>
+      </form>
+
+      <div id="convert-status" class="banner hidden" role="status"></div>
+
+      <div id="convert-result" class="result-card" aria-live="polite">
+        <div class="placeholder">Результат появится здесь</div>
+      </div>
+
+      <section class="history">
+        <header class="history-head">
+          <h2>История</h2>
+          <button type="button" class="ghost" data-action="clear-history">Очистить историю</button>
+        </header>
+        <div id="history-list" class="history-list" aria-live="polite"></div>
+      </section>
+    </section>
+
+    <section class="card" aria-label="Текущее время в городах">
+      <header class="section-header">
+        <div>
+          <p class="kicker">Мировые часы</p>
+          <h1>Текущее время в городах</h1>
+        </div>
+        <div class="actions-inline">
+          <button type="button" class="ghost" data-action="refresh-cities">Обновить</button>
+          <button type="button" class="primary" data-action="manage-cities">Управление городами</button>
+        </div>
+      </header>
+      <div id="city-status" class="banner hidden" role="status"></div>
+      <div id="cities" class="cities-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="footer">Сделано для демо, без внешних библиотек.</footer>
+
+  <div class="modal hidden" id="city-modal" role="dialog" aria-modal="true" aria-labelledby="city-modal-title">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2 id="city-modal-title">Управление городами</h2>
+        <button class="icon-button" data-action="close-modal" aria-label="Закрыть">✕</button>
+      </header>
+      <form id="city-form" class="city-form">
+        <div class="city-checkboxes" id="city-checkboxes"></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost" data-action="close-modal">Отмена</button>
+          <button type="submit" class="primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="alert"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
