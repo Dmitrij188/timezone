@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Converter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="container">
+        <h1>Time Converter</h1>
+
+        <section class="block">
+            <h2>World clocks</h2>
+            <div id="world-list" class="list"></div>
+        </section>
+
+        <section class="block">
+            <h2>Convert time</h2>
+            <form id="convert-form" class="form">
+                <label>
+                    Local datetime
+                    <input type="datetime-local" id="datetime-input" required>
+                </label>
+                <div class="row">
+                    <label>
+                        From timezone
+                        <select id="from-tz"></select>
+                    </label>
+                    <label>
+                        To timezone
+                        <select id="to-tz"></select>
+                    </label>
+                </div>
+                <button type="submit">Convert</button>
+            </form>
+            <div id="convert-result" class="result"></div>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
