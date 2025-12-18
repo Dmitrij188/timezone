@@ -20,9 +20,7 @@
           <h1>Конвертация времени</h1>
         </div>
         <div class="actions-inline">
-          <button type="button" class="ghost" data-action="clear">Очистить</button>
           <button type="button" class="ghost" data-action="now">Сейчас</button>
-          <button type="button" class="ghost" data-action="swap">Поменять</button>
         </div>
       </header>
 
@@ -30,10 +28,6 @@
         <label class="field">
           <span>Дата и время</span>
           <input aria-label="Дата и время" type="datetime-local" name="datetime" data-input="datetime" required />
-        </label>
-        <label class="field">
-          <span>Из таймзоны</span>
-          <select aria-label="Из таймзоны" name="from" data-select="from" required></select>
         </label>
         <label class="field">
           <span>В таймзону</span>
@@ -66,8 +60,10 @@
           <h1>Текущее время в городах</h1>
         </div>
         <div class="actions-inline">
-          <button type="button" class="ghost" data-action="refresh-cities">Обновить</button>
-          <button type="button" class="primary" data-action="manage-cities">Управление городами</button>
+          <button type="button" class="ghost refresh-button" data-action="refresh-cities">
+            <span class="label">Обновить</span>
+            <span class="fill" aria-hidden="true"></span>
+          </button>
         </div>
       </header>
       <div id="city-status" class="banner hidden" role="status"></div>
@@ -76,22 +72,6 @@
   </main>
 
   <footer class="footer">Сделано для демо, без внешних библиотек.</footer>
-
-  <div class="modal hidden" id="city-modal" role="dialog" aria-modal="true" aria-labelledby="city-modal-title">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h2 id="city-modal-title">Управление городами</h2>
-        <button class="icon-button" data-action="close-modal" aria-label="Закрыть">✕</button>
-      </header>
-      <form id="city-form" class="city-form">
-        <div class="city-checkboxes" id="city-checkboxes"></div>
-        <div class="modal-actions">
-          <button type="button" class="ghost" data-action="close-modal">Отмена</button>
-          <button type="submit" class="primary">Сохранить</button>
-        </div>
-      </form>
-    </div>
-  </div>
 
   <div id="toast" class="toast hidden" role="alert"></div>
 

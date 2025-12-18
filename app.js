@@ -18,14 +18,18 @@ const PRESET_CITIES = [
   { city: "Дубай", timezone: "Asia/Dubai" },
 ];
 
+const SOURCE_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const REFRESH_DURATION = 21000;
+
 const state = {
   history: [],
   cityData: new Map(),
   selectedCities: new Set(),
   timers: {
     tick: null,
-    sync: null,
+    refreshProgress: null,
   },
+  refreshStartedAt: null,
 };
 
 // Storage helpers
@@ -40,17 +44,6 @@ const storage = {
   },
   saveHistory(items) {
     localStorage.setItem("tz_history", JSON.stringify(items.slice(0, 10)));
-  },
-  readCities() {
-    try {
-      const raw = localStorage.getItem("tz_cities");
-      return raw ? new Set(JSON.parse(raw)) : null;
-    } catch (e) {
-      return null;
-    }
-  },
-  saveCities(set) {
-    localStorage.setItem("tz_cities", JSON.stringify(Array.from(set)));
   },
 };
 
@@ -163,23 +156,7 @@ function renderCities() {
   });
 }
 
-function renderCityModal() {
-  const box = document.getElementById("city-checkboxes");
-  box.innerHTML = "";
-  PRESET_CITIES.forEach((city) => {
-    const id = `city-${city.timezone}`;
-    const label = document.createElement("label");
-    label.innerHTML = `<input type="checkbox" id="${id}" value="${city.timezone}" ${
-      state.selectedCities.has(city.timezone) ? "checked" : ""
-    } /> <span>${city.city}</span> <span class="muted">(${city.timezone})</span>`;
-    box.appendChild(label);
-  });
-}
-
-function toggleModal(open) {
-  const modal = document.getElementById("city-modal");
-  modal.classList.toggle("hidden", !open);
-}
+function toggleModal() {}
 
 function updateApiStatus(ok) {
   const el = document.getElementById("api-status");
@@ -193,7 +170,6 @@ function applyHistory(index) {
   const item = state.history[index];
   if (!item) return;
   document.querySelector('[data-input="datetime"]').value = item.datetime;
-  document.querySelector('[data-select="from"]').value = item.from;
   document.querySelector('[data-select="to"]').value = item.to;
   renderResult({ friendly: item.result, iso: item.iso, diff: item.diff });
 }
@@ -201,7 +177,6 @@ function applyHistory(index) {
 async function handleConvert(e) {
   e.preventDefault();
   const datetime = document.querySelector('[data-input="datetime"]').value;
-  const from = document.querySelector('[data-select="from"]').value;
   const to = document.querySelector('[data-select="to"]').value;
   const statusEl = document.getElementById("convert-status");
   const resultBox = document.getElementById("convert-result");
@@ -215,20 +190,20 @@ async function handleConvert(e) {
   resultBox.innerHTML = '<div class="loading-skeleton" style="height:24px"></div>';
 
   try {
-    const payload = { datetime, fromTimezone: from, toTimezone: to };
+    const payload = { datetime, fromTimezone: SOURCE_TIMEZONE, toTimezone: to };
     const data = await api.convert(payload);
     const friendly = new Intl.DateTimeFormat("ru-RU", {
       dateStyle: "full",
       timeStyle: "medium",
       timeZone: data.output.timezone,
     }).format(new Date(data.output.iso));
-    const diffHours = computeDiffHours(from, to, datetime, data.output.iso);
+    const diffHours = computeDiffHours(SOURCE_TIMEZONE, to, datetime, data.output.iso);
     const diffText = diffHours === null ? "—" : `Цель ${diffHours} от источника`;
     renderResult({ friendly, iso: data.output.iso, diff: diffText });
     setStatus(statusEl, "success", "Готово");
     const historyItem = {
       datetime,
-      from,
+      from: SOURCE_TIMEZONE,
       to,
       result: friendly,
       iso: data.output.iso,
@@ -282,20 +257,6 @@ function handleNow() {
     .toISOString()
     .slice(0, 16);
   input.value = local;
-}
-
-function handleSwap() {
-  const from = document.querySelector('[data-select="from"]');
-  const to = document.querySelector('[data-select="to"]');
-  const temp = from.value;
-  from.value = to.value;
-  to.value = temp;
-}
-
-function handleClear() {
-  document.querySelector('[data-input="datetime"]').value = "";
-  renderResult(null);
-  clearStatus(document.getElementById("convert-status"));
 }
 
 function handleClearHistory() {
@@ -360,29 +321,7 @@ function tickCities() {
 
 function startTimers() {
   if (state.timers.tick) clearInterval(state.timers.tick);
-  if (state.timers.sync) clearInterval(state.timers.sync);
   state.timers.tick = setInterval(tickCities, 1000);
-  state.timers.sync = setInterval(refreshCities, 60000);
-}
-
-function handleManageCities() {
-  renderCityModal();
-  toggleModal(true);
-}
-
-function handleModalSubmit(e) {
-  e.preventDefault();
-  const inputs = document.querySelectorAll('#city-checkboxes input[type="checkbox"]');
-  const selected = new Set();
-  inputs.forEach((i) => i.checked && selected.add(i.value));
-  state.selectedCities = selected;
-  storage.saveCities(selected);
-  toggleModal(false);
-  refreshCities();
-}
-
-function handleModalClose() {
-  toggleModal(false);
 }
 
 async function checkApiStatus() {
@@ -398,35 +337,46 @@ async function checkApiStatus() {
 function bindEvents() {
   document.getElementById("convert-form").addEventListener("submit", handleConvert);
   document.querySelector('[data-action="now"]').addEventListener("click", handleNow);
-  document.querySelector('[data-action="swap"]').addEventListener("click", handleSwap);
-  document.querySelector('[data-action="clear"]').addEventListener("click", handleClear);
   document.querySelector('[data-action="clear-history"]').addEventListener("click", handleClearHistory);
-  document.querySelector('[data-action="refresh-cities"]').addEventListener("click", refreshCities);
-  document.querySelector('[data-action="manage-cities"]').addEventListener("click", handleManageCities);
-  document.querySelectorAll('[data-action="close-modal"]').forEach((btn) =>
-    btn.addEventListener("click", handleModalClose)
-  );
-  document.getElementById("city-form").addEventListener("submit", handleModalSubmit);
+  document.querySelector('[data-action="refresh-cities"]').addEventListener("click", handleRefreshClick);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") toggleModal(false);
   });
 }
 
 function initSelects() {
-  const from = document.querySelector('[data-select="from"]');
   const to = document.querySelector('[data-select="to"]');
-  renderOptions(from);
   renderOptions(to);
-  from.value = "UTC";
   to.value = "Europe/Moscow";
 }
 
 function initState() {
   state.history = storage.readHistory();
-  const savedCities = storage.readCities();
-  state.selectedCities = savedCities ?? new Set(PRESET_CITIES.map((c) => c.timezone));
+  state.selectedCities = new Set(PRESET_CITIES.map((c) => c.timezone));
   renderHistory();
   renderCities();
+}
+
+function startRefreshProgress() {
+  const button = document.querySelector('[data-action="refresh-cities"]');
+  const fill = button.querySelector(".fill");
+  if (state.timers.refreshProgress) clearInterval(state.timers.refreshProgress);
+  state.refreshStartedAt = Date.now();
+  fill.style.width = "0%";
+  state.timers.refreshProgress = setInterval(() => {
+    const elapsed = Date.now() - state.refreshStartedAt;
+    const ratio = Math.min(elapsed / REFRESH_DURATION, 1);
+    fill.style.width = `${ratio * 100}%`;
+    if (ratio >= 1) {
+      clearInterval(state.timers.refreshProgress);
+      refreshCities().finally(() => startRefreshProgress());
+    }
+  }, 100);
+}
+
+async function handleRefreshClick() {
+  await refreshCities();
+  startRefreshProgress();
 }
 
 async function init() {
@@ -434,9 +384,9 @@ async function init() {
   initState();
   bindEvents();
   handleNow();
-  renderCityModal();
   await checkApiStatus();
   await refreshCities();
+  startRefreshProgress();
   startTimers();
 }
 
