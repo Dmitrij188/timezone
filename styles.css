@@ -6,7 +6,7 @@
   --primary: #2e6be6;
   --primary-strong: #1f53bb;
   --border: #e4e8ee;
-  --shadow: 0 10px 30px rgba(31, 41, 51, 0.08);
+  --shadow: none;
   --success: #17b26a;
   --danger: #d92d20;
   --warning: #f79009;
@@ -18,10 +18,8 @@
 
 body {
   margin: 0;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: radial-gradient(circle at 20% 20%, rgba(46, 107, 230, 0.08), transparent 25%),
-    radial-gradient(circle at 80% 10%, rgba(23, 178, 106, 0.1), transparent 20%),
-    var(--bg);
+  font-family: "Tahoma", "Verdana", "Arial", sans-serif;
+  background: var(--bg);
   color: var(--text);
   min-height: 100vh;
 }
@@ -65,7 +63,6 @@ body {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: var(--shadow);
 }
 
 .section-header {
@@ -100,7 +97,7 @@ button {
   padding: 10px 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.05s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: transform 0.05s ease, background 0.2s ease;
 }
 
 button:focus-visible,
@@ -115,9 +112,8 @@ button:hover {
 }
 
 .primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+  background: var(--primary);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(46, 107, 230, 0.35);
 }
 
 .ghost {
@@ -138,7 +134,7 @@ button:hover {
 .refresh-button .fill {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(46, 107, 230, 0.2), rgba(46, 107, 230, 0.4));
+  background: rgba(46, 107, 230, 0.2);
   width: 0%;
   transition: width 0.1s linear;
 }
@@ -278,7 +274,6 @@ select {
   border-radius: 14px;
   padding: 14px;
   background: #fdfefe;
-  box-shadow: 0 4px 12px rgba(31, 41, 51, 0.06);
 }
 
 .tag {
@@ -318,27 +313,17 @@ select {
 
 .loading-skeleton {
   height: 20px;
-  background: linear-gradient(90deg, #f4f6fb 25%, #e9edf5 37%, #f4f6fb 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.2s ease-in-out infinite;
+  background: #e7ebf2;
+  border: 1px solid var(--border);
   border-radius: 8px;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0 50%;
-  }
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(46, 107, 230, 0.25);
+    background-color: rgba(46, 107, 230, 0.16);
   }
   100% {
-    box-shadow: 0 0 0 12px rgba(46, 107, 230, 0);
+    background-color: transparent;
   }
 }
 
@@ -357,7 +342,6 @@ select {
   border-radius: 12px;
   background: #111827;
   color: #fff;
-  box-shadow: var(--shadow);
   min-width: 220px;
   text-align: left;
 }
