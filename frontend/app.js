@@ -66,8 +66,7 @@ async function loadClocks() {
 
     try {
       const data = await fetchCurrentTime(tz);
-      const formatted = formatIso(data.iso);
-      row.textContent = `${label} — ${formatted || data.iso}`;
+      row.textContent = `${label} — ${data.time || data.iso}`;
     } catch (error) {
       console.error("Clock error", error);
       row.textContent = `${label} — Ошибка (${error.message})`;

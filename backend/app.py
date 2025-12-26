@@ -23,10 +23,12 @@ def _aware_now(tz_name: str) -> datetime:
 def current_time(tz: str) -> dict:
     now = _aware_now(tz)
     iso_value = now.isoformat()
+    formatted = now.strftime("%Y-%m-%d %H:%M:%S")
     return {
         "timezone": tz,
         "iso": iso_value,
         "ISO": iso_value,
+        "time": formatted,
         "epoch": int(now.timestamp()),
     }
 
